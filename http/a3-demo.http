@@ -1,0 +1,46 @@
+### Проверка блока A3 «Обработать заказ» вручную.
+### Открой файл в IntelliJ и нажимай зелёные стрелки слева от запросов по порядку.
+### Перед этим запусти FbsApplication.
+
+### 1. Заполнить демо-данные: 4 товара, 4 заказа с WB, Ozon и Яндекс Маркета
+POST http://localhost:8080/api/demo/seed
+
+### 2. Посмотреть состояние ДО обработки: заказы ещё на площадках, резервов нет
+GET http://localhost:8080/api/demo/state
+
+### 3. Запустить A3: загрузка, резерв, пересчёт, выгрузка остатков
+POST http://localhost:8080/api/order-processing/run
+
+### 4. Состояние ПОСЛЕ: статусы заказов, резервы, задания на сборку, что ушло на площадки
+GET http://localhost:8080/api/demo/state
+
+### 5. Покупатель отменил заказ WB-1001
+POST http://localhost:8080/api/demo/orders/WB/WB-1001/cancel
+
+### 6. Снова A3: резерв снят, футболка вернулась в доступный остаток
+POST http://localhost:8080/api/order-processing/run
+
+### 7. Довезли кружек
+PUT http://localhost:8080/api/demo/stock
+Content-Type: application/json
+
+{ "sku": "MUG-350-WHT", "quantity": 20 }
+
+### 8. Новый заказ с Ozon
+POST http://localhost:8080/api/demo/orders
+Content-Type: application/json
+
+{
+  "marketplace": "OZON",
+  "externalId": "OZ-2002",
+  "lines": [ { "sku": "MUG-350-WHT", "quantity": 4 } ]
+}
+
+### 9. Прогон A3 для нового заказа
+POST http://localhost:8080/api/order-processing/run
+
+### 10. Отчёт последнего прогона
+GET http://localhost:8080/api/order-processing/last-report
+
+### Очистить всё
+POST http://localhost:8080/api/demo/reset
